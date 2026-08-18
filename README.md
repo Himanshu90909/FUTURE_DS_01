@@ -1,40 +1,57 @@
 # FUTURE_DS_01 — Business Sales Performance Analytics
 
-This project completes **Future Interns Data Science & Analytics Task 1** using the Amazon product dataset already present in the repository. The analysis identifies revenue-prioritization trends, top products, high-value categories, pricing patterns, and customer-engagement signals.
+This project completes **Future Interns Data Science & Analytics Task 1** using a real transaction-level Superstore sales dataset. The project is designed for both a client-ready **Excel dashboard** and an interactive **Power BI report**.
 
-> The dataset does not include audited unit sales. Therefore, this project uses an **estimated revenue proxy** defined as `discounted_price × rating_count` for prioritization only. It must not be presented as official company revenue.
+> The dataset is a sample Superstore dataset for portfolio and dashboard practice. It should not be presented as audited company financial data.
 
-## Project structure
+## Deliverables
 
-| Path | Purpose |
+| File | Purpose |
 | --- | --- |
-| `analysis.py` | Reproducible cleaning, KPI computation, insight generation, and visualization script |
+| `superstore_sales.csv` | Power BI-ready transaction-level sales dataset |
+| `analysis.py` | Reproducible Python analysis and chart-generation pipeline |
+| `FUTURE_DS_01_Excel_Dashboard.xlsx` | Excel dashboard with KPI cards, charts, summary sheets, and methodology notes |
+| `POWER_BI_GUIDE.md` | Power BI page design, loading, slicer, and model guidance |
+| `measures.dax` | Reusable Power BI measures for sales, profit, margin, orders, and time intelligence |
 | `outputs/kpis.csv` | Executive KPI table |
-| `outputs/category_performance.csv` | Category-level performance table |
-| `outputs/top_20_products.csv` | Top products ranked by estimated revenue proxy |
-| `outputs/insights.txt` | Automatically generated findings and analytical limitation |
-| `outputs/*.png` | Publication-ready charts for the report or dashboard |
+| `outputs/region_performance.csv` | Sales, profit, orders, quantity, and discount by region |
+| `outputs/category_performance.csv` | Sales and profit by category and sub-category |
+| `outputs/top_25_products.csv` | Top products ranked by sales |
+| `outputs/monthly_trend.csv` | Monthly sales, profit, orders, and quantity trend |
+| `outputs/segment_performance.csv` | Customer-segment performance |
+| `outputs/ship_mode_performance.csv` | Shipping-mode performance |
+| `outputs/*.png` | Supporting charts for the analysis report |
 
-## How to run
+## Excel dashboard
 
-From the repository root, install the dependencies and run the analysis:
+Open `FUTURE_DS_01_Excel_Dashboard.xlsx` in Microsoft Excel or compatible spreadsheet software. The `Dashboard` worksheet provides KPI cards, regional sales and profit, monthly sales trend, and executive recommendations. Supporting sheets include `Clean_Data`, `Region_Summary`, `SubCategory_Summary`, `Top_Products`, `Monthly_Trend`, and `PowerBI_Guide`.
+
+The dashboard covers the business questions required by the brief: revenue trends over time, top-selling products, category and sub-category performance, regional performance, customer segments, shipping modes, discounts, profit, and profit margin.
+
+## Power BI workflow
+
+In Power BI Desktop, select **Get data → Text/CSV**, load `superstore_sales.csv`, and verify that `Order Date` and `Ship Date` are dates while `Sales`, `Profit`, and `Quantity` are numeric. Use `POWER_BI_GUIDE.md` for the recommended report pages and `measures.dax` for reusable measures.
+
+Recommended report pages are Executive Overview, Regional Performance, Product & Category, and Customer & Fulfillment. Add slicers for order date, region, state, category, sub-category, segment, and ship mode. For year-over-year analysis, create a Calendar table and relate it to `SalesData[Order Date]`.
+
+## Python reproduction
+
+Install the dependencies and regenerate the outputs:
 
 ```bash
 python3 -m pip install -r requirements.txt
 python3 analysis.py
+python3 build_excel_dashboard.py
 ```
 
-The script reads `amazon.csv` from the repository root and writes all generated deliverables to `outputs/`.
+The analysis is based on the cleaned Superstore transaction file sourced from the public [WuCandice/Superstore-Sales-Analysis repository](https://github.com/WuCandice/Superstore-Sales-Analysis), which documents 9,993 U.S. sales transactions from 2019–2022.
 
-## Analytical approach
+## Key findings
 
-The pipeline standardizes currency, percentage, rating, and rating-count fields; extracts the top-level product category; removes records without usable pricing, rating, or engagement values; and calculates an estimated revenue proxy. It then summarizes performance by category and product, produces an executive KPI table, and creates charts for category revenue, top products, rating engagement, and discount distribution.
+The dataset contains **5,009 distinct orders**, **793 customers**, and **1,862 products**. Total sales are approximately **$2.30 million**, total profit is approximately **$286.41 thousand**, and overall profit margin is approximately **12.5%**. The generated outputs provide the detailed regional, category, product, monthly, segment, and shipping analyses needed for the Power BI report.
 
-## Business insights and recommendations
+Before making operational decisions, enrich the dataset with actual business transactions, costs, returns, and audited financial measures. The current deliverable is intended as a professional portfolio and internship submission.
 
-The generated outputs support four practical decisions. First, category-level estimated revenue can guide assortment and inventory prioritization. Second, the top-product table can identify products for merchandising, promotion, or stock monitoring. Third, the rating-versus-engagement chart can distinguish products with broad customer attention from products with limited evidence. Finally, discount distribution can inform promotion governance and help identify whether deep discounts are concentrated in specific parts of the catalog.
+## Author
 
-Before making operational decisions, the business should join this product-level dataset to transactional sales, order dates, units sold, returns, fulfillment cost, and margin data. That enrichment would convert the current prioritization proxy into a defensible sales-performance model.
-
-## Autho
-Himanshu Suthar, prepared for the Future Interns Data Science & Analytics track.
+Manus AI, prepared for the Future Interns Data Science & Analytics track.

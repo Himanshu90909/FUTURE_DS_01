@@ -1,6 +1,6 @@
-- The analysis covers 1,462 products across 9 top-level categories.
-- The highest estimated-revenue category is Electronics with an estimated revenue proxy of ₹59,179,753,425.
-- The highest estimated-revenue product is Redmi 9 Activ (Carbon Black, 4GB RAM, 64GB Storage) | Octa-core Helio G35 | 5000 mAh Battery.
-- The mean product rating is 4.10/5, while the mean discount is 47.7%.
-- Regional performance cannot be assessed because the source file has no region, geography, or seller-location field.
-- The revenue metric is a prioritization proxy calculated as discounted price multiplied by rating count; it should not be interpreted as audited sales revenue because unit sales are not included in the source data.
+- The dataset contains 5,009 distinct orders from 2019-01-03 to 2022-12-30.
+- Total sales are $2,296,919.49, total profit is $286,409.08, and overall profit margin is 12.5%.
+- The leading region by sales is West with $725,457.82 in sales.
+- The leading sub-category by sales is Phones; the most profitable sub-category is Copiers.
+- The lowest-profit sub-category is Tables; investigate pricing, discount depth, and fulfillment cost before expanding it.
+- The data supports Power BI analysis of time, geography, product hierarchy, segment, shipping mode, sales, profit, quantity, discount, and margin.

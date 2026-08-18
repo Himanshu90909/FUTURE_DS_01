@@ -1,7 +1,9 @@
-metric,value
-Products analyzed,1462.0
-Categories analyzed,9.0
-Estimated revenue proxy,71917696425.27
-Total ratings/reviews,26765385.0
-Average rating,4.096716826265389
-Average discount,47.672366621067034
+Metric,Value
+Orders,5009.0
+Customers,793.0
+Products,1862.0
+Sales,2296919.4883000003
+Profit,286409.08050000004
+Profit Margin,0.12469269469779178
+Quantity,37871.0
+Average Discount,0.1561883318322826

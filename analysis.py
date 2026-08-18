@@ -1,181 +1,86 @@
 """Future Interns Task 1: Business Sales Performance Analytics.
 
-The script reads the repository's Amazon product dataset, cleans monetary and
-percentage fields, computes business KPIs, exports summary tables, and creates
-charts for revenue, category, product, and rating analysis.
+This pipeline uses the cleaned Superstore transaction CSV and produces
+Power BI-ready summary tables and publication-ready charts.
 """
 from pathlib import Path
-import re
-
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 ROOT = Path(__file__).resolve().parent
-DATA_PATH = ROOT / "amazon.csv"
-OUTPUT_DIR = ROOT / "outputs"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-sns.set_theme(style="whitegrid", context="talk")
-PALETTE = "#2563eb"
-ACCENT = "#f59e0b"
-
-
-def parse_money(value):
-    if pd.isna(value):
-        return float("nan")
-    cleaned = re.sub(r"[^0-9.]", "", str(value).replace(",", ""))
-    return float(cleaned) if cleaned else float("nan")
-
-
-def parse_percent(value):
-    if pd.isna(value):
-        return float("nan")
-    cleaned = re.sub(r"[^0-9.]", "", str(value))
-    return float(cleaned) if cleaned else float("nan")
-
-
-def parse_count(value):
-    if pd.isna(value):
-        return float("nan")
-    cleaned = re.sub(r"[^0-9]", "", str(value))
-    return int(cleaned) if cleaned else float("nan")
-
-
-def save_table(df, name):
-    df.to_csv(OUTPUT_DIR / name, index=False)
+DATA_PATH = ROOT / 'superstore_sales.csv'
+OUTPUT_DIR = ROOT / 'outputs'
+OUTPUT_DIR.mkdir(exist_ok=True)
+sns.set_theme(style='whitegrid', context='talk')
 
 
 def main():
-    df = pd.read_csv(DATA_PATH)
+    df = pd.read_csv(DATA_PATH, parse_dates=['Order Date', 'Ship Date'])
     df.columns = [c.strip() for c in df.columns]
+    for column in ['Sales', 'Quantity', 'Discount', 'Profit', 'Profit Margin %']:
+        df[column] = pd.to_numeric(df[column], errors='coerce')
+    df = df.dropna(subset=['Order Date', 'Sales', 'Profit', 'Quantity']).copy()
+    df['Year'] = df['Order Date'].dt.year
+    df['Month'] = df['Order Date'].dt.to_period('M').astype(str)
 
-    for column in ["discounted_price", "actual_price"]:
-        df[column] = df[column].map(parse_money)
-    df["discount_percentage"] = df["discount_percentage"].map(parse_percent)
-    df["rating_count"] = df["rating_count"].map(parse_count)
-    df["rating"] = pd.to_numeric(df["rating"], errors="coerce")
-    df["category"] = df["category"].fillna("Unknown").str.split("|").str[0]
-    df["product_name"] = df["product_name"].fillna("Unknown product")
-    df["estimated_revenue"] = df["discounted_price"] * df["rating_count"]
-    df["estimated_savings"] = (df["actual_price"] - df["discounted_price"]) * df["rating_count"]
-    df = df.dropna(subset=["discounted_price", "rating_count", "rating"])
+    kpis = pd.DataFrame({
+        'Metric': ['Orders', 'Customers', 'Products', 'Sales', 'Profit', 'Profit Margin', 'Quantity', 'Average Discount'],
+        'Value': [
+            df['Order ID'].nunique(), df['Customer ID'].nunique(), df['Product ID'].nunique(),
+            df['Sales'].sum(), df['Profit'].sum(), df['Profit'].sum() / df['Sales'].sum(),
+            df['Quantity'].sum(), df['Discount'].mean(),
+        ],
+    })
+    region = df.groupby('Region', as_index=False).agg(Orders=('Order ID', 'nunique'), Sales=('Sales', 'sum'), Profit=('Profit', 'sum'), Quantity=('Quantity', 'sum'), Avg_Discount=('Discount', 'mean')).sort_values('Sales', ascending=False)
+    category = df.groupby(['Category', 'Sub-Category'], as_index=False).agg(Orders=('Order ID', 'nunique'), Sales=('Sales', 'sum'), Profit=('Profit', 'sum'), Quantity=('Quantity', 'sum'), Avg_Discount=('Discount', 'mean')).sort_values('Sales', ascending=False)
+    product = df.groupby(['Product ID', 'Product Name', 'Category', 'Sub-Category'], as_index=False).agg(Orders=('Order ID', 'nunique'), Sales=('Sales', 'sum'), Profit=('Profit', 'sum'), Quantity=('Quantity', 'sum')).sort_values('Sales', ascending=False)
+    monthly = df.groupby('Month', as_index=False).agg(Sales=('Sales', 'sum'), Profit=('Profit', 'sum'), Orders=('Order ID', 'nunique'), Quantity=('Quantity', 'sum'))
+    segment = df.groupby('Segment', as_index=False).agg(Orders=('Order ID', 'nunique'), Sales=('Sales', 'sum'), Profit=('Profit', 'sum'), Quantity=('Quantity', 'sum')).sort_values('Sales', ascending=False)
+    ship = df.groupby('Ship Mode', as_index=False).agg(Orders=('Order ID', 'nunique'), Sales=('Sales', 'sum'), Profit=('Profit', 'sum')).sort_values('Sales', ascending=False)
 
-    category = (
-        df.groupby("category", as_index=False)
-        .agg(
-            products=("product_id", "nunique"),
-            estimated_revenue=("estimated_revenue", "sum"),
-            average_discounted_price=("discounted_price", "mean"),
-            average_rating=("rating", "mean"),
-            review_count=("rating_count", "sum"),
-        )
-        .sort_values("estimated_revenue", ascending=False)
-    )
-    products = (
-        df.groupby("product_name", as_index=False)
-        .agg(
-            category=("category", "first"),
-            estimated_revenue=("estimated_revenue", "sum"),
-            rating_count=("rating_count", "sum"),
-            rating=("rating", "mean"),
-            discounted_price=("discounted_price", "mean"),
-        )
-        .sort_values("estimated_revenue", ascending=False)
-    )
-
-    kpis = pd.DataFrame(
-        {
-            "metric": [
-                "Products analyzed",
-                "Categories analyzed",
-                "Estimated revenue proxy",
-                "Total ratings/reviews",
-                "Average rating",
-                "Average discount",
-            ],
-            "value": [
-                len(df),
-                df["category"].nunique(),
-                df["estimated_revenue"].sum(),
-                df["rating_count"].sum(),
-                df["rating"].mean(),
-                df["discount_percentage"].mean(),
-            ],
-        }
-    )
-    save_table(kpis, "kpis.csv")
-    save_table(category, "category_performance.csv")
-    save_table(products.head(20), "top_20_products.csv")
-
-    fig, ax = plt.subplots(figsize=(12, 7))
-    top = category.head(10).sort_values("estimated_revenue")
-    ax.barh(top["category"], top["estimated_revenue"] / 1e6, color=PALETTE)
-    ax.set_title("Estimated Revenue by Category (log scale)", weight="bold")
-    ax.set_xscale("log")
-    ax.set_xlabel("Estimated revenue proxy (₹ millions, log scale)")
-    ax.set_ylabel("")
-    fig.tight_layout()
-    fig.savefig(OUTPUT_DIR / "revenue_by_category.png", dpi=180)
-    plt.close(fig)
-
-    fig, ax = plt.subplots(figsize=(12, 8))
-    top_products = products.head(10).sort_values("estimated_revenue")
-    labels = top_products["product_name"].str.slice(0, 38)
-    ax.barh(labels, top_products["estimated_revenue"] / 1e6, color=ACCENT)
-    ax.set_title("Top Products by Estimated Revenue Proxy", weight="bold", pad=18)
-    ax.tick_params(axis="y", labelsize=11)
-    ax.set_xlabel("Estimated revenue proxy (₹ millions)")
-    ax.set_ylabel("")
-    fig.tight_layout()
-    fig.savefig(OUTPUT_DIR / "top_products.png", dpi=180)
-    plt.close(fig)
-
-    fig, ax = plt.subplots(figsize=(11, 7))
-    sns.scatterplot(
-        data=df,
-        x="rating_count",
-        y="rating",
-        hue="discount_percentage",
-        size="estimated_revenue",
-        sizes=(30, 600),
-        palette="viridis",
-        alpha=0.75,
-        ax=ax,
-        legend=False,
-    )
-    ax.set_xscale("log")
-    ax.set_title("Customer Engagement and Product Rating", weight="bold")
-    ax.set_xlabel("Rating count (log scale)")
-    ax.set_ylabel("Average rating")
-    fig.tight_layout()
-    fig.savefig(OUTPUT_DIR / "rating_engagement.png", dpi=180)
-    plt.close(fig)
+    kpis.to_csv(OUTPUT_DIR / 'kpis.csv', index=False)
+    region.to_csv(OUTPUT_DIR / 'region_performance.csv', index=False)
+    category.to_csv(OUTPUT_DIR / 'category_performance.csv', index=False)
+    product.head(25).to_csv(OUTPUT_DIR / 'top_25_products.csv', index=False)
+    monthly.to_csv(OUTPUT_DIR / 'monthly_trend.csv', index=False)
+    segment.to_csv(OUTPUT_DIR / 'segment_performance.csv', index=False)
+    ship.to_csv(OUTPUT_DIR / 'ship_mode_performance.csv', index=False)
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.histplot(df["discount_percentage"], bins=15, color=PALETTE, ax=ax)
-    ax.set_title("Distribution of Product Discounts", weight="bold")
-    ax.set_xlabel("Discount percentage")
-    ax.set_ylabel("Products")
-    fig.tight_layout()
-    fig.savefig(OUTPUT_DIR / "discount_distribution.png", dpi=180)
-    plt.close(fig)
+    sns.barplot(data=region, x='Sales', y='Region', hue='Region', palette='Blues_r', legend=False, ax=ax)
+    ax.set_title('Sales by Region', weight='bold'); ax.set_xlabel('Sales ($)'); ax.set_ylabel('')
+    fig.tight_layout(); fig.savefig(OUTPUT_DIR / 'sales_by_region.png', dpi=180); plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.lineplot(data=monthly, x='Month', y='Sales', marker='o', color='#2563EB', ax=ax)
+    ax.set_title('Monthly Sales Trend', weight='bold'); ax.set_xlabel('Order month'); ax.set_ylabel('Sales ($)'); ax.tick_params(axis='x', rotation=60)
+    fig.tight_layout(); fig.savefig(OUTPUT_DIR / 'monthly_sales_trend.png', dpi=180); plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(12, 7))
+    top = category.head(10).sort_values('Profit')
+    sns.barplot(data=top, x='Profit', y='Sub-Category', hue='Sub-Category', palette='RdYlGn', legend=False, ax=ax)
+    ax.set_title('Profit by Sub-Category', weight='bold'); ax.set_xlabel('Profit ($)'); ax.set_ylabel('')
+    fig.tight_layout(); fig.savefig(OUTPUT_DIR / 'profit_by_subcategory.png', dpi=180); plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    sns.scatterplot(data=df.sample(min(4000, len(df)), random_state=42), x='Discount', y='Profit', hue='Category', alpha=.55, ax=ax)
+    ax.axhline(0, color='#111827', linewidth=1)
+    ax.set_title('Discount and Profit Relationship', weight='bold'); ax.set_xlabel('Discount'); ax.set_ylabel('Profit ($)')
+    fig.tight_layout(); fig.savefig(OUTPUT_DIR / 'discount_profit.png', dpi=180); plt.close(fig)
 
     insights = [
-        f"The analysis covers {len(df):,} products across {df['category'].nunique()} top-level categories.",
-        f"The highest estimated-revenue category is {category.iloc[0]['category']} with an estimated revenue proxy of ₹{category.iloc[0]['estimated_revenue']:,.0f}.",
-        f"The highest estimated-revenue product is {products.iloc[0]['product_name'][:100]}.",
-        f"The mean product rating is {df['rating'].mean():.2f}/5, while the mean discount is {df['discount_percentage'].mean():.1f}%.",
-        "Regional performance cannot be assessed because the source file has no region, geography, or seller-location field.",
-        "The revenue metric is a prioritization proxy calculated as discounted price multiplied by rating count; it should not be interpreted as audited sales revenue because unit sales are not included in the source data.",
+        f"The dataset contains {df['Order ID'].nunique():,} distinct orders from {df['Order Date'].min().date()} to {df['Order Date'].max().date()}.",
+        f"Total sales are ${df['Sales'].sum():,.2f}, total profit is ${df['Profit'].sum():,.2f}, and overall profit margin is {df['Profit'].sum() / df['Sales'].sum():.1%}.",
+        f"The leading region by sales is {region.iloc[0]['Region']} with ${region.iloc[0]['Sales']:,.2f} in sales.",
+        f"The leading sub-category by sales is {category.iloc[0]['Sub-Category']}; the most profitable sub-category is {category.sort_values('Profit', ascending=False).iloc[0]['Sub-Category']}.",
+        f"The lowest-profit sub-category is {category.sort_values('Profit').iloc[0]['Sub-Category']}; investigate pricing, discount depth, and fulfillment cost before expanding it.",
+        "The data supports Power BI analysis of time, geography, product hierarchy, segment, shipping mode, sales, profit, quantity, discount, and margin.",
     ]
-    (OUTPUT_DIR / "insights.txt").write_text("\n".join(f"- {item}" for item in insights) + "\n", encoding="utf-8")
-
-    print("Analysis completed")
+    (OUTPUT_DIR / 'insights.txt').write_text('\n'.join(f'- {x}' for x in insights) + '\n', encoding='utf-8')
+    print('Analysis completed')
     print(kpis.to_string(index=False))
-    print("Top category:", category.iloc[0]["category"])
-    print("Top product:", products.iloc[0]["product_name"][:100])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
