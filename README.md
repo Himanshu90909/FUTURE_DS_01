@@ -36,6 +36,5 @@ The generated outputs support four practical decisions. First, category-level es
 
 Before making operational decisions, the business should join this product-level dataset to transactional sales, order dates, units sold, returns, fulfillment cost, and margin data. That enrichment would convert the current prioritization proxy into a defensible sales-performance model.
 
-## Author
-
-Manus AI, prepared for the Future Interns Data Science & Analytics track.
+## Autho
+Himanshu Suthar, prepared for the Future Interns Data Science & Analytics track.
