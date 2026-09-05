@@ -21,7 +21,6 @@ def load_data():
 
 
 def main():
-    st.set_page_config(page_title="Executive Sales Dashboard", page_icon="📈", layout="wide")
     st.title("📈 Executive Sales Dashboard")
     st.caption("A Python implementation of the Excel dashboard deliverable")
     df = load_data()
