@@ -13,13 +13,40 @@ DATA_PATH = ROOT / 'superstore_sales.csv'
 OUTPUT_DIR = ROOT / 'outputs'
 OUTPUT_DIR.mkdir(exist_ok=True)
 sns.set_theme(style='whitegrid', context='talk')
+REQUIRED_COLUMNS = {
+    'Order ID', 'Order Date', 'Ship Date', 'Customer ID', 'Product ID',
+    'Category', 'Sub-Category', 'Region', 'Segment', 'Ship Mode',
+    'Sales', 'Quantity', 'Discount', 'Profit',
+}
+
+
+def load_data():
+    """Load and normalize the transaction-level source data."""
+    df = pd.read_csv(DATA_PATH)
+    df.columns = df.columns.str.strip()
+
+    missing = REQUIRED_COLUMNS.difference(df.columns)
+    if missing:
+        raise ValueError(
+            f'Missing required columns in {DATA_PATH.name}: '
+            f'{", ".join(sorted(missing))}'
+        )
+
+    for column in ['Order Date', 'Ship Date']:
+        df[column] = pd.to_datetime(df[column], errors='coerce')
+    for column in ['Sales', 'Quantity', 'Discount', 'Profit']:
+        df[column] = pd.to_numeric(df[column], errors='coerce')
+
+    # The source stores this field as percentage points (33.75), while
+    # Excel/Power BI percentage formats expect a decimal (0.3375).
+    df['Profit Margin %'] = (
+        df['Profit'].div(df['Sales'].where(df['Sales'].ne(0))).fillna(0)
+    )
+    return df
 
 
 def main():
-    df = pd.read_csv(DATA_PATH, parse_dates=['Order Date', 'Ship Date'])
-    df.columns = [c.strip() for c in df.columns]
-    for column in ['Sales', 'Quantity', 'Discount', 'Profit', 'Profit Margin %']:
-        df[column] = pd.to_numeric(df[column], errors='coerce')
+    df = load_data()
     df = df.dropna(subset=['Order Date', 'Sales', 'Profit', 'Quantity']).copy()
     df['Year'] = df['Order Date'].dt.year
     df['Month'] = df['Order Date'].dt.to_period('M').astype(str)
