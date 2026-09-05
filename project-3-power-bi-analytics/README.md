@@ -13,6 +13,12 @@ measures for an interactive sales-performance report.
 Load the shared `superstore_sales.csv` file from the repository root into
 Power BI, then use `POWER_BI_GUIDE.md` and `measures.dax` to build the report.
 
+The Python dashboard replacement runs from the repository root with:
+
+```bash
+streamlit run project-3-power-bi-analytics/app.py
+```
+
 ## Skills demonstrated
 
 - Power BI data modeling
