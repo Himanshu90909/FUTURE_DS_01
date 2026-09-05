@@ -24,7 +24,7 @@ This project completes **Future Interns Data Science & Analytics Task 1** using 
 
 ## Excel dashboard
 
-Open `FUTURE_DS_01_Excel_Dashboard.xlsx` in Microsoft Excel or compatible spreadsheet software. The `Dashboard` worksheet provides KPI cards, regional sales and profit, monthly sales trend, and executive recommendations. Supporting sheets include `Clean_Data`, `Region_Summary`, `SubCategory_Summary`, `Top_Products`, `Monthly_Trend`, and `PowerBI_Guide`.
+Open `FUTURE_DS_01_Excel_Dashboard.xlsx` in Microsoft Excel or compatible spreadsheet software. The `Dashboard` worksheet provides KPI cards, regional sales and profit, monthly sales trend, and executive recommendations. Supporting sheets include `Clean_Data`, `Region_Summary`, `SubCategory_Summary`, `Top_Products`, `Monthly_Trend`, and `PowerBI_Guide`. The Python-generated CSV and PNG outputs are written to `outputs/`.
 
 The dashboard covers the business questions required by the brief: revenue trends over time, top-selling products, category and sub-category performance, regional performance, customer segments, shipping modes, discounts, profit, and profit margin.
 
