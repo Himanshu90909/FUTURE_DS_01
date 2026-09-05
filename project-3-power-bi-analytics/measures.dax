@@ -1,0 +1,29 @@
+-- Future Interns Task 1: Business Sales Performance Analytics
+
+Total Sales = SUM(SalesData[Sales])
+
+Total Profit = SUM(SalesData[Profit])
+
+Total Quantity = SUM(SalesData[Quantity])
+
+Total Orders = DISTINCTCOUNT(SalesData[Order ID])
+
+Total Customers = DISTINCTCOUNT(SalesData[Customer ID])
+
+Total Products = DISTINCTCOUNT(SalesData[Product ID])
+
+Profit Margin = DIVIDE([Total Profit], [Total Sales], 0)
+
+Average Discount = AVERAGE(SalesData[Discount])
+
+Average Order Value = DIVIDE([Total Sales], [Total Orders], 0)
+
+Sales LY = CALCULATE([Total Sales], SAMEPERIODLASTYEAR('Calendar'[Date]))
+
+Sales YoY % = DIVIDE([Total Sales] - [Sales LY], [Sales LY], 0)
+
+Profit LY = CALCULATE([Total Profit], SAMEPERIODLASTYEAR('Calendar'[Date]))
+
+Profit YoY % = DIVIDE([Total Profit] - [Profit LY], [Profit LY], 0)
+
+Average Selling Price = DIVIDE([Total Sales], [Total Quantity], 0)
