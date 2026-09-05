@@ -11,6 +11,11 @@ ROOT = Path(__file__).resolve().parent
 DATA_PATH = ROOT / 'superstore_sales.csv'
 OUTPUT_PATH = ROOT / 'FUTURE_DS_01_Excel_Dashboard.xlsx'
 NAVY, BLUE, TEAL, AMBER, WHITE, SLATE = '17324D', '2563EB', '0F766E', 'F59E0B', 'FFFFFF', '475569'
+REQUIRED_COLUMNS = {
+    'Order ID', 'Order Date', 'Ship Date', 'Customer ID', 'Product ID',
+    'Category', 'Sub-Category', 'Region', 'Segment', 'Ship Mode',
+    'Sales', 'Quantity', 'Discount', 'Profit',
+}
 
 
 def style_header(cells, fill=BLUE):
@@ -35,10 +40,32 @@ def title(ws, ref, text):
     c.alignment = Alignment(horizontal='left', vertical='center')
 
 
+def load_data():
+    """Load and normalize the transaction-level source data."""
+    df = pd.read_csv(DATA_PATH)
+    df.columns = df.columns.str.strip()
+
+    missing = REQUIRED_COLUMNS.difference(df.columns)
+    if missing:
+        raise ValueError(
+            f'Missing required columns in {DATA_PATH.name}: '
+            f'{", ".join(sorted(missing))}'
+        )
+
+    for column in ['Order Date', 'Ship Date']:
+        df[column] = pd.to_datetime(df[column], errors='coerce')
+    for column in ['Sales', 'Quantity', 'Discount', 'Profit']:
+        df[column] = pd.to_numeric(df[column], errors='coerce')
+
+    # Store the margin as a decimal so Excel's 0.0% format renders correctly.
+    df['Profit Margin %'] = (
+        df['Profit'].div(df['Sales'].where(df['Sales'].ne(0))).fillna(0)
+    )
+    return df
+
+
 def main():
-    df = pd.read_csv(DATA_PATH, parse_dates=['Order Date', 'Ship Date'])
-    for c in ['Sales', 'Quantity', 'Discount', 'Profit', 'Profit Margin %']:
-        df[c] = pd.to_numeric(df[c], errors='coerce')
+    df = load_data()
     df = df.dropna(subset=['Order Date', 'Sales', 'Profit', 'Quantity']).copy()
     df['Month'] = df['Order Date'].dt.to_period('M').astype(str)
 
@@ -67,17 +94,25 @@ def main():
         for r in data.itertuples(index=False, name=None): ws.append(list(r))
         style_header(ws[1], fill); add_table(ws, f'A1:{get_column_letter(ws.max_column)}{ws.max_row}', table_name, 'TableStyleMedium2'); ws.freeze_panes = 'A2'
         for col in range(1, ws.max_column + 1): ws.column_dimensions[get_column_letter(col)].width = 20
+        header_columns = {cell.value: cell.column for cell in ws[1]}
+        for name in ['Sales', 'Profit']:
+            if name in header_columns:
+                for row in range(2, ws.max_row + 1):
+                    ws.cell(row, header_columns[name]).number_format = '$#,##0.00'
+        for name in ['Avg_Discount', 'Profit Margin %']:
+            if name in header_columns:
+                for row in range(2, ws.max_row + 1):
+                    ws.cell(row, header_columns[name]).number_format = '0.0%'
+        for name in ['Orders', 'Quantity']:
+            if name in header_columns:
+                for row in range(2, ws.max_row + 1):
+                    ws.cell(row, header_columns[name]).number_format = '#,##0'
         return ws
 
     summary_sheet(region_ws, region, list(region.columns), 'RegionSummary', BLUE)
     summary_sheet(subcat_ws, subcat, list(subcat.columns), 'SubCategorySummary', TEAL)
     summary_sheet(product_ws, product.head(25), list(product.columns), 'TopProducts', AMBER)
     summary_sheet(monthly_ws, monthly, list(monthly.columns), 'MonthlyTrend', BLUE)
-    for ws in [region_ws, subcat_ws, product_ws, monthly_ws]:
-        for row in ws.iter_rows(min_row=2):
-            for cell in row:
-                if cell.column in [3,4]: cell.number_format = '$#,##0.00'
-                if cell.column in [5,6,7]: cell.number_format = '#,##0.00'
     subcat_ws.conditional_formatting.add(f'D2:D{subcat_ws.max_row}', ColorScaleRule(start_type='min', start_color='FECACA', mid_type='percentile', mid_value=50, mid_color='FEF3C7', end_type='max', end_color='BBF7D0'))
 
     # Power BI guide sheet
