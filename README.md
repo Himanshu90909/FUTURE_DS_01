@@ -49,6 +49,12 @@ streamlit run project-2-excel-sales-dashboard/app.py
 streamlit run project-3-power-bi-analytics/app.py
 ```
 
+To open all three from one dashboard:
+
+```bash
+streamlit run app.py
+```
+
 Install the shared dependencies first:
 
 ```bash
