@@ -14,6 +14,12 @@ Superstore transaction dataset.
 Open `FUTURE_DS_01_Excel_Dashboard.xlsx` in Microsoft Excel or a compatible
 spreadsheet application.
 
+The live Python dashboard version runs from the repository root with:
+
+```bash
+streamlit run project-2-excel-sales-dashboard/app.py
+```
+
 ## Skills demonstrated
 
 - Dashboard design
