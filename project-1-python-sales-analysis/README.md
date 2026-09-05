@@ -9,11 +9,15 @@ and supporting charts.
 From the repository root:
 
 ```bash
-python project-1-python-sales-analysis/analysis.py
+streamlit run project-1-python-sales-analysis/app.py
 ```
 
-The script uses the shared `superstore_sales.csv` dataset in the repository
-root and writes reproducible files to `outputs/`.
+The app uses the shared `superstore_sales.csv` dataset in the repository root.
+The original batch analysis is still available with:
+
+```bash
+python project-1-python-sales-analysis/analysis.py
+```
 
 ## Skills demonstrated
 
