@@ -37,6 +37,28 @@ Open `FUTURE_DS_01_Excel_Dashboard.xlsx` in Microsoft Excel or compatible spread
 
 The dashboard covers the business questions required by the brief: revenue trends over time, top-selling products, category and sub-category performance, regional performance, customer segments, shipping modes, discounts, profit, and profit margin.
 
+## Python dashboards
+
+GitHub previews source files and folders, but it does not run Streamlit apps
+inside a folder page. Each portfolio folder now includes a Python dashboard
+that can be launched from the repository root:
+
+```bash
+streamlit run project-1-python-sales-analysis/app.py
+streamlit run project-2-excel-sales-dashboard/app.py
+streamlit run project-3-power-bi-analytics/app.py
+```
+
+Install the shared dependencies first:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+The three apps use the same cleaned transaction dataset while presenting
+different views: exploratory Python analysis, an executive dashboard, and
+Power BI-style slicers and measures.
+
 ## Power BI workflow
 
 In Power BI Desktop, select **Get data → Text/CSV**, load `superstore_sales.csv`, and verify that `Order Date` and `Ship Date` are dates while `Sales`, `Profit`, and `Quantity` are numeric. Use `POWER_BI_GUIDE.md` for the recommended report pages and `measures.dax` for reusable measures.
