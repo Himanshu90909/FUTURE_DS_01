@@ -22,7 +22,6 @@ def load_data():
 
 
 def main():
-    st.set_page_config(page_title="Power BI Sales Analytics", page_icon="🧭", layout="wide")
     st.title("🧭 Power BI Sales Analytics")
     st.caption("Interactive Python implementation of the Power BI report design")
     df = load_data()
