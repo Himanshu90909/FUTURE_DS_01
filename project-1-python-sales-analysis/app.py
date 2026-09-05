@@ -29,7 +29,6 @@ def money(value):
 
 
 def main():
-    st.set_page_config(page_title="Python Sales Analysis", page_icon="📊", layout="wide")
     st.title("📊 Python Sales Performance Analysis")
     st.caption("Interactive implementation of the Future Interns sales analytics project")
     df = load_data()
