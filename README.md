@@ -22,6 +22,15 @@ This project completes **Future Interns Data Science & Analytics Task 1** using 
 | `outputs/ship_mode_performance.csv` | Shipping-mode performance |
 | `outputs/*.png` | Supporting charts for the analysis report |
 
+## Portfolio project links
+
+The repository is organized into three portfolio-ready project folders so
+each deliverable can be shared separately on LinkedIn:
+
+1. [Project 1 — Python Sales Performance Analysis](project-1-python-sales-analysis/)
+2. [Project 2 — Excel Sales Dashboard](project-2-excel-sales-dashboard/)
+3. [Project 3 — Power BI Sales Analytics](project-3-power-bi-analytics/)
+
 ## Excel dashboard
 
 Open `FUTURE_DS_01_Excel_Dashboard.xlsx` in Microsoft Excel or compatible spreadsheet software. The `Dashboard` worksheet provides KPI cards, regional sales and profit, monthly sales trend, and executive recommendations. Supporting sheets include `Clean_Data`, `Region_Summary`, `SubCategory_Summary`, `Top_Products`, `Monthly_Trend`, and `PowerBI_Guide`. The Python-generated CSV and PNG outputs are written to `outputs/`.
